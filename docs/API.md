@@ -36,19 +36,77 @@ The client uses Node.js `fetch`, defaults to a 15-second timeout, and supports `
 
 There are no pagination parameters or semantics implemented because none were established in the source reviewed. Shipment lookup methods return `null` on HTTP 404. Other non-success responses throw an error.
 
-## Search services
+## Client method examples
+
+The examples below assume `client` is an initialized `PacklinkClient` and use response values as `unknown`, since the public sources do not define stable response types.
+
+### `getWarehouses()`
+
+Read the warehouses configured for the account:
 
 ```ts
-const result = await client.searchServices({
+const warehouses = await client.getWarehouses();
+```
+
+### `getParcels()`
+
+Read the parcel presets configured for the account:
+
+```ts
+const parcels = await client.getParcels();
+```
+
+### `searchServices(search)`
+
+Search rates for a parcel and route. Dimensions in this example are centimetres:
+
+```ts
+const services = await client.searchServices({
   fromCountry: 'IT',
-  fromZip: '20100',
+  fromZip: '87036',
   toCountry: 'IT',
-  toZip: '00100',
-  packages: [{ height: 10, width: 20, length: 30, weight: 2 }],
-  // serviceId: 'optional-service-id',
-  // source: 'PRO', // default
+  toZip: '40121',
+  packages: [{ height: 15, width: 20, length: 30, weight: 5 }],
 });
 ```
+
+### `getShipment(reference)`
+
+Read a shipment by its Packlink reference. The result is `null` if it was not found:
+
+```ts
+const shipment = await client.getShipment('PACKLINK_SHIPMENT_REFERENCE');
+```
+
+### `getLabels(reference)`
+
+Read label metadata or links already associated with a shipment:
+
+```ts
+const labels = await client.getLabels('PACKLINK_SHIPMENT_REFERENCE');
+```
+
+### `getTracking(reference)`
+
+Read tracking events for a shipment:
+
+```ts
+const tracking = await client.getTracking('PACKLINK_SHIPMENT_REFERENCE');
+```
+
+### `createShipmentDraft(draft, confirmation)`
+
+Create a draft in the Packlink account. `draftPayload` must contain a valid payload for the integration flow. This is the only state-changing method in the client and requires explicit confirmation:
+
+```ts
+const createdDraft = await client.createShipmentDraft(draftPayload, {
+  confirm: 'CREATE_SHIPMENT_DRAFT',
+});
+```
+
+Do not call this example as a test against a live account. See [Create a shipment draft](#create-a-shipment-draft) for its behavior and limitations.
+
+## Search services
 
 The query uses the following keys, encoded by `URLSearchParams`:
 
@@ -76,14 +134,6 @@ Retrieving a label link is not the same as purchasing a shipment or label. The c
 ## Create a shipment draft
 
 `createShipmentDraft` performs `POST /v1/shipments` with the supplied JSON payload. The official integration core expects a draft payload with fields such as platform, origin/destination, selected service, package data, and optional customs/additional data; required fields vary by flow and are not frozen here because there is no public OpenAPI schema.
-
-The method requires an explicit confirmation token to make the side effect visible at the call site:
-
-```ts
-const result = await client.createShipmentDraft(draftPayload, {
-  confirm: 'CREATE_SHIPMENT_DRAFT',
-});
-```
 
 It returns `{ reference, raw }` when the response includes a reference. Calling this method creates a draft in the account. Official integration guides describe completing payment from the Packlink PRO account, but that does not guarantee the behavior of every account or future API version. Verify the operation and any economic effects with Packlink. This method is intentionally excluded from all live credential checks in this repository.
 
