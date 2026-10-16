@@ -1,0 +1,23 @@
+name: Feature request
+description: Suggest an improvement or additional endpoint
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Official Packlink source
+      description: Link official documentation or source code supporting the proposed behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true

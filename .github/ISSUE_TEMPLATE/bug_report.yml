@@ -1,0 +1,30 @@
+name: Bug report
+description: Report a reproducible issue in this client
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the behavior and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include a minimal code sample with all credentials and personal data removed.
+      render: typescript
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+    validations:
+      required: true
+  - type: textarea
+    id: response
+    attributes:
+      label: Sanitized error or response
+      description: Remove API keys, addresses, names, references, and other account data.
